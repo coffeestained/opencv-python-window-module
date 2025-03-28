@@ -1,0 +1,5 @@
+PyGObject>=3.42
+python-xlib>=0.33
+opencv-python
+python-dotenv
+pynput
