@@ -2,10 +2,15 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Log level constant and STD flag from environment
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 STD = os.getenv('STD_OUT', 'False').lower() == 'true'
+
+print(f"LOG_LEVEL: {LOG_LEVEL}, STD: {STD} {os.getenv('STD_OUT', 'False')}")
 
 # Create logs directory if it doesn't exist
 log_directory = 'logs'

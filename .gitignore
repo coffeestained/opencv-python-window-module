@@ -179,3 +179,4 @@ venv
 
 # Logs
 *.log
+logs/
