@@ -5,12 +5,13 @@ More to come as requirements are built discovered.
 
 ## System Requirements
 $ sudo apt-get update
-$ sudo apt-get install python3.6
+$ sudo apt install python3.6
 $ sudo apt install xdotool
-$ sudo apt install python3-xlib
 $ sudo apt install libgirepository1.0-dev libcairo2-dev python3-gi python3-gi-cairo
-$ sudo apt-get install python3-tk python3-dev
-$ sudo apt install gnome-screenshot
+$ sudo apt install python3-tk python3-dev
+$ sudo apt install wmctrl
+$ sudo apt install imagemagick x11-utils x11-xserver-utils xdotool
+$ sudo apt install ffmpeg -y
 
 ## Getting Started
 $ python3 -m venv venv

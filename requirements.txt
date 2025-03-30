@@ -1,7 +1,7 @@
 PyGObject>=3.42
-python-xlib>=0.33
 python-dotenv
 pynput
 pyautogui 
 opencv-python 
 numpy
+mss

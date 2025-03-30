@@ -28,6 +28,7 @@ class App:
     def run(self):
         self.listener.start()  # Start the listener (non-async)
         self.overlay.register_frame_source(self.screen)
+        self.overlay.capture_target_callback = self.screen.set_capture_target
         self.loop.run_in_executor(self.executor, self.screen.start)  # start screen capture in another thread
         self.loop.run_in_executor(self.executor, self.overlay.show)  # start GTK in another thread
 

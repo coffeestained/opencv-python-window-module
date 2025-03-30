@@ -1,6 +1,8 @@
 import gi
 gi.require_version('Gtk', '3.0')
 import cv2
+import subprocess
+from utils.logging import logger
 from gi.repository import Gtk, GLib, GdkPixbuf
 from dotenv import load_dotenv
 load_dotenv()
@@ -8,14 +10,17 @@ load_dotenv()
 PREVIEW_WIDTH = 600
 
 class Overlay:
-    def __init__(self):
+    def __init__(self, capture_target_callback=None):
         self.window = Gtk.Window()
         self.frame_source = None
         self.image = Gtk.Image()
         self.overlay_box = Gtk.Fixed()
         self.preview_visible = True
+        self.capture_selector = Gtk.ComboBoxText()
+        self.capture_target_callback = capture_target_callback
         self.setup_window()
         self.setup_ui_components()
+        self.populate_window_list()
 
     def setup_window(self):
         self.window.set_app_paintable(True)
@@ -33,13 +38,38 @@ class Overlay:
         self.window.connect('destroy', Gtk.main_quit)
 
     def setup_ui_components(self):
-        label = Gtk.Label(label="🔥 Overlay Active 🔥")
+        label = Gtk.Label(label="OpenCV Toolbox")
         self.overlay_box.put(label, 10, 10)
-        self.overlay_box.put(self.image, 10, 40)
+        self.overlay_box.put(self.image, 10, 70)
 
-        toggle_button = Gtk.Button(label="Show/Hide Preview")
+        toggle_button = Gtk.Button(label="Show/Hide")
         toggle_button.connect("clicked", self.toggle_preview_visibility)
-        self.overlay_box.put(toggle_button, 10, 10 + 30)
+        self.overlay_box.put(toggle_button, 10, 40)
+
+        self.capture_selector.append_text("Screen")
+        self.capture_selector.set_active(0)
+        self.capture_selector.connect("changed", self.capture_selection_changed)
+        self.overlay_box.put(self.capture_selector, 150, 40)
+
+    def populate_window_list(self):
+        window_list = self.get_open_windows()
+        for window_name in window_list:
+            self.capture_selector.append_text(window_name)
+
+    def get_open_windows(self):
+        result = subprocess.run(['wmctrl', '-l'], stdout=subprocess.PIPE, text=True)
+        windows = []
+        for line in result.stdout.splitlines():
+            parts = line.split(None, 3)
+            if len(parts) == 4:
+                windows.append(parts[3])
+        return windows
+
+    def capture_selection_changed(self, combo):
+        selection = combo.get_active_text()
+        logger.info(f"Selection: {selection}")
+        if self.capture_target_callback:
+            self.capture_target_callback(selection)
 
     def toggle_preview_visibility(self, button):
         self.preview_visible = not self.preview_visible
