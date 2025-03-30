@@ -3,33 +3,37 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from pynput import keyboard
-from utils.logging import logger
+from utils.screen import ScreenCapture
 from ui.overlay import Overlay
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Thread pool executor
-executor = ThreadPoolExecutor()
+# App Class
+class App:
+    def __init__(self):
+        self.screen = ScreenCapture()
+        self.overlay = Overlay()
+        self.listener = keyboard.Listener(
+            on_release=self.on_release,
+        )
+        self.executor = ThreadPoolExecutor()
+        self.loop = asyncio.new_event_loop()
+        
+    # Listens for a escape key release and then closes the program
+    def on_release(self, key):
+        if key == keyboard.Key.esc:
+            os._exit(0)
 
-# Listens for a escape key release and then closes the program
-def on_release(key):
-    logger.info(f"Key released: {key}")
-    if key == keyboard.Key.esc:
-        logger.info("Program terminated by user.")
-        os._exit(0)
+    def run(self):
+        self.listener.start()  # Start the listener (non-async)
+        self.overlay.register_frame_source(self.screen)
+        self.loop.run_in_executor(self.executor, self.screen.start)  # start screen capture in another thread
+        self.loop.run_in_executor(self.executor, self.overlay.show)  # start GTK in another thread
+
+        self.loop.run_forever()
 
 # Run the App
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    
-    # Loop Run Until Complete Items
-    overlay = Overlay(target_window_name=os.getenv("TARGET_WINDOW_NAME"))
-    listener = keyboard.Listener(
-        on_release=on_release)
-    
-    # Run the loop
-    loop.run_until_complete(asyncio.gather(
-        listener.start(),
-        overlay.show(),
-    ))
+    app = App()
+    app.run()
