@@ -8,7 +8,7 @@ Once the workflow is running, the terminal will log the operation outputs, and t
 
 ---
 
-## 🧱 System Requirements
+## System Requirements
 
 ```bash
 sudo apt-get update
@@ -23,7 +23,7 @@ sudo apt install ffmpeg -y
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 python3 -m venv venv
@@ -34,11 +34,11 @@ python app.py
 
 ---
 
-## 📦 Workflow ZIP Package Specification
+## Workflow ZIP Package Specification
 
 The Workflow ZIP file defines a self-contained computer vision pipeline for object detection and tracking. It **must** include a `manifest.json` and any image or data assets required for the defined operations.
 
-> 🔥 **Note**: All assets declared in the `manifest.json` must be present inside the ZIP file. The workflow archive must be completely self-contained.
+>  **Note**: All assets declared in the `manifest.json` must be present inside the ZIP file. The workflow archive must be completely self-contained.
 
 ### ✅ Currently Supported Operations
 
@@ -48,7 +48,7 @@ The Workflow ZIP file defines a self-contained computer vision pipeline for obje
 
 ---
 
-### 📁 Required ZIP Structure
+###  Required ZIP Structure
 
 ```
 workflow_package.zip
@@ -61,7 +61,7 @@ workflow_package.zip
 
 ---
 
-### 📄 Example `manifest.json`
+###  Example `manifest.json`
 
 ```json
 {
@@ -83,7 +83,7 @@ workflow_package.zip
 
 ---
 
-### 📝 Field Descriptions
+###  Field Descriptions
 
 | Field             | Type       | Required | Description                                                  |
 |------------------|------------|----------|--------------------------------------------------------------|
@@ -98,7 +98,7 @@ workflow_package.zip
 
 ---
 
-### ✅ Validation Rules
+###  Validation Rules
 
 - The ZIP **must** contain `manifest.json` at the root.
 - All asset files referenced in the manifest **must exist** inside the ZIP.
