@@ -3,7 +3,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from pynput import keyboard
-from utils.screen import ScreenCapture
+from domains.screen import ScreenCapture
 from ui.overlay import Overlay
 
 # Load environment variables from .env file

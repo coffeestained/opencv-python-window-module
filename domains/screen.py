@@ -1,6 +1,4 @@
 import os
-import gi
-gi.require_version('Gtk', '3.0')
 import cv2
 from utils.logging import logger
 import subprocess
