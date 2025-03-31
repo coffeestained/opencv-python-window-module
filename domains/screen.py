@@ -1,28 +1,23 @@
-import os
 import gi
 gi.require_version('Gtk', '3.0')
 import cv2
-from utils.logging import logger
 import subprocess
 import numpy as np
-import mss
 import threading
 from gi.repository import Gtk, GLib, GdkPixbuf
 from PIL import Image
 from dotenv import load_dotenv
-import subprocess
-import numpy as np
-import cv2
-from PIL import Image
 import io
+import mss
+import os
 load_dotenv()
 
 PREVIEW_WIDTH = 600
 
 class ScreenCapture:
     def __init__(self):
-        self.sct = mss.mss()
         self.capture_method = "screen"
+        self.window_name = None
         self.window_id = None
         self.frame = None
         self.previous_frame = None
@@ -30,37 +25,38 @@ class ScreenCapture:
         self.thread = None
 
     def set_capture_target(self, target):
-        logger.debug(f"Setting capture target to: {target}")
         if target == "Screen":
             self.capture_method = "screen"
+            self.window_name = None
             self.window_id = None
         else:
             self.capture_method = "window"
-            self.window_id = target
-        self.stop()
-        self.start()   
+            self.window_name = target
+            self.window_id = self.resolve_window_id(self.window_name)
 
-    # Capture the window using xdotool and ffmpeg
-    # As a note this is really slow, not safe, inputs are not sanitized and as a result not recommended for production.
-    # I needed a way to capture the window annd came up with this.
-    # TODO: Find a better way to capture the window.
-    def capture_window(self):
+    def resolve_window_id(self, name):
         try:
             result = subprocess.run(
-                ['xdotool', 'search', '--name', self.window_id],
+                ['xdotool', 'search', '--name', name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=True
             )
             window_ids = result.stdout.strip().split('\n')
-            if not window_ids:
-                logger.error(f"[xdotool] No window ID found for name: {self.window_id}")
+            return window_ids[0] if window_ids else None
+        except subprocess.CalledProcessError as e:
+            print(f"[xdotool ERROR] {e.stderr}")
+            return None
+
+    def capture_window(self):
+        try:
+            if not self.window_id:
+                print("[capture_window] No window ID available.")
                 return None
-            window_id = window_ids[0]
 
             # Get geometry using xwininfo
-            wininfo = subprocess.run(['xwininfo', '-id', window_id], stdout=subprocess.PIPE, text=True)
+            wininfo = subprocess.run(['xwininfo', '-id', self.window_id], stdout=subprocess.PIPE, text=True)
             output = wininfo.stdout
             x = int([line for line in output.splitlines() if "Absolute upper-left X" in line][0].split()[-1])
             y = int([line for line in output.splitlines() if "Absolute upper-left Y" in line][0].split()[-1])
@@ -86,38 +82,33 @@ class ScreenCapture:
             )
 
             if proc.returncode != 0:
-                logger.error(f"[ffmpeg ERROR] {proc.stderr.decode()}")
+                print(f"[ffmpeg ERROR] {proc.stderr.decode()}")
                 return None
 
             image = Image.open(io.BytesIO(proc.stdout))
             return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
         except Exception as e:
-            logger.error(f"Error capturing window: {e}")
+            print(f"[General ERROR] {e}")
             return None
 
-    def capture_screen(self, mssRef):
-        try:
-            
-            monitor = mssRef.monitors[1]  # [0] = all, [1] = primary
-            sct_img = mssRef.grab(monitor)
+    def capture_screen(self):
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            sct_img = sct.grab(monitor)
             frame = np.array(sct_img)
-            self.frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-            return self.frame
-        except Exception as e:
-            logger.error(f"Error capturing screen: {e}")
-            return None
-
+            return cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
     def _capture_loop(self):
-        mssRef = mss.mss()
         while self.running:
             if self.capture_method == "window" and self.window_id:
                 frame = self.capture_window()
             else:
-                frame = self.capture_screen(mssRef)
-            self.previous_frame = self.frame
-            self.frame = frame
+                frame = self.capture_screen()
+
+            if frame is not None:
+                self.previous_frame = self.frame
+                self.frame = frame
 
     def start(self):
         if not self.running:
@@ -128,7 +119,7 @@ class ScreenCapture:
     def stop(self):
         if self.running:
             self.running = False
-            self.thread.join(1)
+            self.thread.join()
 
     def get_frame(self):
         return self.frame
