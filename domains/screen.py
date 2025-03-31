@@ -32,8 +32,7 @@ class ScreenCapture:
         else:
             self.capture_method = "window"
             self.window_name = target
-            if not self.window_id:
-                self.window_id = self.resolve_window_id(self.window_name)
+            self.window_id = self.resolve_window_id(self.window_name)
 
     def resolve_window_id(self, name):
         try:
