@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utils.logger import logger
+from utils.logging import logger
 
 class OperationRegistry:
     def __init__(self):

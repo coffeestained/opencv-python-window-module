@@ -3,8 +3,10 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from pynput import keyboard
-from domains.screen import ScreenCapture
+from domains.computer_vision_operations import registry
 from ui.overlay import Overlay
+from domains.screen import ScreenCapture
+from domains.computer_vision_workflows import WorkflowEngine
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,6 +16,7 @@ class App:
     def __init__(self):
         self.screen = ScreenCapture()
         self.overlay = Overlay()
+        self.workflow_engine = WorkflowEngine(registry, self.screen)
         self.listener = keyboard.Listener(
             on_release=self.on_release,
         )
@@ -28,6 +31,7 @@ class App:
     def run(self):
         self.listener.start()  # Start the listener (non-async)
         self.overlay.register_frame_source(self.screen)
+        self.overlay.register_workflow_engine(self.workflow_engine)
         self.overlay.capture_target_callback = self.screen.set_capture_target
         self.loop.run_in_executor(self.executor, self.screen.start)  # start screen capture in another thread
         self.loop.run_in_executor(self.executor, self.overlay.show)  # start GTK in another thread

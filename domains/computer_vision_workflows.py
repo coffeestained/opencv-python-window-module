@@ -1,10 +1,10 @@
 import zipfile
 import json
-from utils.logger import logger
+from utils.logging import logger
 from domains.computer_vision_operations import OperationRegistry
 from domains.screen import ScreenCapture
 
-class WorkflowDeployment:
+class WorkflowEngine:
     def __init__(self, operation_registry: OperationRegistry, screen: ScreenCapture):
         self.registry = operation_registry
         self.screen = screen
