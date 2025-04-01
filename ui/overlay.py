@@ -11,11 +11,12 @@ PREVIEW_WIDTH = 600
 
 class Overlay:
     def __init__(self, capture_target_callback=None):
-        self.window = Gtk.Window()
+        self.preview_visible = True
         self.frame_source = None
+        self.workflow_engine = None
+        self.window = Gtk.Window()
         self.image = Gtk.Image()
         self.overlay_box = Gtk.Fixed()
-        self.preview_visible = True
         self.capture_selector = Gtk.ComboBoxText()
         self.capture_target_callback = capture_target_callback
         self.setup_window()
@@ -78,6 +79,9 @@ class Overlay:
     def register_frame_source(self, source_class):
         self.frame_source = source_class
         GLib.timeout_add(33, self.update_frame)
+
+    def register_workflow_engine(self, workflow_engine):
+        self.workflow_engine = workflow_engine
 
     def update_frame(self):
         if self.frame_source and hasattr(self.frame_source, 'frame') and self.preview_visible:
